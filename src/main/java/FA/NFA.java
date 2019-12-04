@@ -65,6 +65,8 @@ public class NFA {
             }
 
             epsilonDfs = new EpsilonDFS(graph, matchSet);
+            // optimization
+            if(epsilonDfs.isEmpty()) return false;
         }
         for (int v: epsilonDfs.closure())
             if (v == finalState) return true;

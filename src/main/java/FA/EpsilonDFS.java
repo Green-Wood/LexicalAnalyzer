@@ -39,4 +39,8 @@ public class EpsilonDFS {
     public Iterable<Integer> closure() {
         return reachable;
     }
+
+    public boolean isEmpty() {
+        return reachable.isEmpty();
+    }
 }
