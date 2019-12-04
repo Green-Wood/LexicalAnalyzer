@@ -4,10 +4,19 @@ import java.util.*;
 
 public class NFA {
     private Graph graph;
-    private int finalState;
+    // for single finalState NFA, finalState index always equals to V-1
+    private Map<Integer, String> finalStateMap;
 
     private void validateRegExp(String regExp) {
         // TODO add validation in the future
+    }
+
+    /**
+     * set pattern name for Token usage
+     * @param name
+     */
+    public void setPatternName(String name) {
+        finalStateMap.put(V() - 1, name);
     }
 
     /**
@@ -15,7 +24,7 @@ public class NFA {
      * @param regExp regular expression
      * @return NFA
      */
-    public static NFA builder(String regExp) {
+    public static NFA builder(String regExp, String pattern) {
         String postfixRegExp = PostFix.infixToPostfix(regExp);
 
         char[] re = postfixRegExp.toCharArray();
@@ -41,15 +50,17 @@ public class NFA {
                 operands.push(concatNfa);
             }
         }
-        return operands.pop();
+        NFA nfa =  operands.pop();
+        nfa.setPatternName(pattern);
+        return nfa;
     }
 
     /**
      *
      * @param text text that you need to recognize
-     * @return if this text matches regular expression
+     * @return if this text matches regular expression, return pattern name. else return ""
      */
-    public boolean recognize(String text) {
+    public String recognize(String text) {
         EpsilonDFS epsilonDfs = new EpsilonDFS(graph, 0);
         char[] textArr = text.toCharArray();
 
@@ -66,27 +77,30 @@ public class NFA {
 
             epsilonDfs = new EpsilonDFS(graph, matchSet);
             // optimization
-            if(epsilonDfs.isEmpty()) return false;
+            if(epsilonDfs.isEmpty()) return "";
         }
-        for (int v: epsilonDfs.closure())
-            if (v == finalState) return true;
-        return false;
+        TreeSet<Integer> finalStates = new TreeSet<Integer>();
+        for (int v: epsilonDfs.closure()) {
+            if (finalStateMap.containsKey(v))
+                finalStates.add(v);
+        }
+        if (finalStates.isEmpty()) return "";
+        return finalStateMap.get(finalStates.first());
     }
 
     private NFA(char c) {
         this.graph = new Graph(2);
-        finalState = 1;
+        this.finalStateMap = new HashMap<Integer, String>();
+        finalStateMap.put(1, "");
         addEdge(0, 1, c);
     }
 
     private NFA(int V) {
         this.graph = new Graph(V);
-        finalState = V - 1;
+        this.finalStateMap = new HashMap<Integer, String>();
+        finalStateMap.put(V - 1, "");
     }
 
-    public int finalState() {
-        return finalState;
-    }
     public int V() {
         return graph.V();
     }
@@ -147,7 +161,7 @@ public class NFA {
         }
 
         // add epsilon edge to concat two NFA
-        resNFA.addEdge(this.finalState, this.V(), '_');
+        resNFA.addEdge(this.V() - 1, this.V(), '_');
 
         // copy edges from second NFA
         for (DirectedEdge e: another.edges()) {
@@ -164,6 +178,7 @@ public class NFA {
      */
     public NFA union(NFA another) {
         NFA resNFA = new NFA(this.V() + another.V() + 2);
+        int newFinalState = this.V() + another.V() + 1;
 
         resNFA.addEdge(0, 1, '_');
 
@@ -173,7 +188,7 @@ public class NFA {
         }
 
         // add epsilon edge to new final state
-        resNFA.addEdge(this.finalState + 1, resNFA.finalState, '_');
+        resNFA.addEdge(this.V(), newFinalState, '_');
 
         resNFA.addEdge(0, this.V() + 1, '_');
 
@@ -183,7 +198,7 @@ public class NFA {
             resNFA.addEdge(from, to, e.label());
         }
 
-        resNFA.addEdge(another.finalState + this.V() + 1, resNFA.finalState, '_');
+        resNFA.addEdge(another.V() + this.V(), newFinalState, '_');
 
         return resNFA;
     }
@@ -192,7 +207,7 @@ public class NFA {
     public String toString() {
         return "NFA{" +
                 "graph=" + graph +
-                ", finalState=" + finalState +
+                ", finalState=" + finalStateMap +
                 '}';
     }
 }
