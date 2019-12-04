@@ -32,6 +32,7 @@ public class PostFix {
      * Transform regular expression by inserting a '《' as explicit concatenation
      * operator.
      */
+    // TODO 1、识别元字符如\(\)    2、识别非终结符{digit}   3、添加?+
     private static String formatRegEx(String regex) {
         StringBuilder res = new StringBuilder();
         List<Character> allOperators = Arrays.asList('|', '?', '+', '*', '^');

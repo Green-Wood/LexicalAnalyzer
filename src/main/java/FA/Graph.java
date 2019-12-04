@@ -7,7 +7,6 @@ public class Graph {
     private final int V;                // number of vertices in this digraph
     private int E;                      // number of edges in this digraph
     private Set<DirectedEdge>[] adj;    // adj[v] = adjacency list for vertex v
-    private int[] indegree;             // indegree[v] = indegree of vertex v
 
     /**
      * Initializes an empty edge-weighted digraph with {@code V} vertices and 0 edges.
@@ -19,7 +18,6 @@ public class Graph {
         if (V < 0) throw new IllegalArgumentException("Number of vertices in a Digraph must be nonnegative");
         this.V = V;
         this.E = 0;
-        this.indegree = new int[V];
         adj = (Set<DirectedEdge>[]) new Set[V];
         for (int v = 0; v < V; v++)
             adj[v] = new HashSet<DirectedEdge>();
@@ -62,7 +60,6 @@ public class Graph {
         validateVertex(v);
         validateVertex(w);
         adj[v].add(e);
-        indegree[w]++;
         E++;
     }
 
@@ -90,19 +87,6 @@ public class Graph {
     public int outdegree(int v) {
         validateVertex(v);
         return adj[v].size();
-    }
-
-    /**
-     * Returns the number of directed edges incident to vertex {@code v}.
-     * This is known as the <em>indegree</em> of vertex {@code v}.
-     *
-     * @param  v the vertex
-     * @return the indegree of vertex {@code v}
-     * @throws IllegalArgumentException unless {@code 0 <= v < V}
-     */
-    public int indegree(int v) {
-        validateVertex(v);
-        return indegree[v];
     }
 
     /**

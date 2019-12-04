@@ -56,7 +56,7 @@ public class NFA {
     }
 
     /**
-     *
+     * determine whether text matches regular expression pattern
      * @param text text that you need to recognize
      * @return if this text matches regular expression, return pattern name. else return ""
      */
@@ -79,12 +79,14 @@ public class NFA {
             // optimization
             if(epsilonDfs.isEmpty()) return "";
         }
+        // TreeSet take the advantage of sorting keys automatically
         TreeSet<Integer> finalStates = new TreeSet<Integer>();
         for (int v: epsilonDfs.closure()) {
             if (finalStateMap.containsKey(v))
                 finalStates.add(v);
         }
         if (finalStates.isEmpty()) return "";
+        // choose pattern name corresponding to the minimum id when multi finalState encountered
         return finalStateMap.get(finalStates.first());
     }
 
