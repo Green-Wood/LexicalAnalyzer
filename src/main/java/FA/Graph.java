@@ -97,7 +97,7 @@ public class Graph {
      * @return all edges in this edge-weighted digraph, as an iterable
      */
     public Iterable<DirectedEdge> edges() {
-        Set<DirectedEdge> list = new HashSet<DirectedEdge>();
+        Set<DirectedEdge> list = new HashSet<>();
         for (int v = 0; v < V; v++) {
             for (DirectedEdge e : adj(v)) {
                 list.add(e);

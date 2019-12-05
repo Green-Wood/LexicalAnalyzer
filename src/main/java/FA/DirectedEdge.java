@@ -1,13 +1,9 @@
 package FA;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 public class DirectedEdge {
     private final int from;
     private final int to;
-    private final char label;
+    private final Label label;
 
     /**
      * Initializes a directed edge from vertex {@code from} to vertex {@code to} with
@@ -18,7 +14,7 @@ public class DirectedEdge {
      * @throws IllegalArgumentException if either {@code from} or {@code to}
      *    is a negative integer
      */
-    public DirectedEdge(int from, int to, char label) {
+    public DirectedEdge(int from, int to, Label label) {
         if (from < 0) throw new IllegalArgumentException("Vertex names must be nonnegative integers");
         if (to < 0) throw new IllegalArgumentException("Vertex names must be nonnegative integers");
         this.from = from;
@@ -46,7 +42,7 @@ public class DirectedEdge {
      * Returns the label of the directed edge.
      * @return the label of the directed edge
      */
-    public char label() {
+    public Label label() {
         return label;
     }
 
@@ -55,6 +51,6 @@ public class DirectedEdge {
      * @return a string representation of the directed edge
      */
     public String toString() {
-        return from + "->" + to + " Label: " + label;
+        return from + "->" + to + " Label: " + label.c;
     }
 }

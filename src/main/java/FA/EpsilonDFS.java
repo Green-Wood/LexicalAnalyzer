@@ -13,12 +13,12 @@ public class EpsilonDFS {
      * @throws IllegalArgumentException unless {@code 0 <= s < V}
      */
     public EpsilonDFS(Graph G, int s) {
-        reachable = new HashSet<Integer>();
+        reachable = new HashSet<>();
         dfs(G, s);
     }
 
     public EpsilonDFS(Graph G, Iterable<Integer> sources) {
-        reachable = new HashSet<Integer>();
+        reachable = new HashSet<>();
         for (int v : sources) {
             if (!reachable.contains(v)) dfs(G, v);
         }
@@ -27,7 +27,7 @@ public class EpsilonDFS {
     private void dfs(Graph G, int v) {
         reachable.add(v);
         for (DirectedEdge e : G.adj(v)) {
-            if (!reachable.contains(e.to()) && e.label() == '_')
+            if (!reachable.contains(e.to()) && e.label().isEpsilon)
                 dfs(G, e.to());
         }
     }

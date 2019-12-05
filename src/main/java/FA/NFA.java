@@ -6,6 +6,7 @@ public class NFA {
     private Graph graph;
     // for single finalState NFA, finalState index always equals to V-1
     private Map<Integer, String> finalStateMap;
+    private static Set<Character> operatorSet = new HashSet<>(Arrays.asList('*', '|', '《', '+', '?'));
 
     private void validateRegExp(String regExp) {
         // TODO add validation in the future
@@ -13,10 +14,20 @@ public class NFA {
 
     /**
      * set pattern name for Token usage
-     * @param name
+     * @param name pattern name
      */
-    public void setPatternName(String name) {
+    private void setPatternName(String name) {
         finalStateMap.put(V() - 1, name);
+    }
+
+    /**
+     * set pattern name for Token usage given stateId,
+     * which can be used to assign multi pattern name with multi finalState
+     * @param stateId finalState id
+     * @param name pattern name
+     */
+    private void setPatternName(int stateId, String name) {
+        finalStateMap.put(stateId, name);
     }
 
     /**
@@ -25,29 +36,44 @@ public class NFA {
      * @return NFA
      */
     public static NFA builder(String regExp, String pattern) {
-        String postfixRegExp = PostFix.infixToPostfix(regExp);
+        List<Label> postfixRegExp = PostFix.toPostfix(regExp);
 
-        char[] re = postfixRegExp.toCharArray();
-        Deque<NFA> operands = new ArrayDeque<NFA>();
+        Deque<NFA> operands = new ArrayDeque<>();
 
-        for(char c: re) {
-            if (!PostFix.precedenceMap.containsKey(c)) {
-                operands.push(new NFA(c));
-            } else if (c == '*') {
+        for(Label label : postfixRegExp) {
+            if (label.isMeta || !operatorSet.contains(label.c)) {
+                operands.push(new NFA(label));
+
+            } else if (label.c == '*') {
                 NFA nfa = operands.pop();
                 NFA kleeneNfa = nfa.kleene();
                 operands.push(kleeneNfa);
-            } else if (c == '|') {
+
+            } else if (label.c == '|') {
                 NFA secondNfa = operands.pop();
                 NFA firstNfa = operands.pop();
                 NFA unionNfa = firstNfa.union(secondNfa);
                 operands.push(unionNfa);
-            } else if (c == '《') {
+
+            } else if (label.c == '《') {
                 //concat two NFA
                 NFA secondNfa = operands.pop();
                 NFA firstNfa = operands.pop();
                 NFA concatNfa = firstNfa.concat(secondNfa);
                 operands.push(concatNfa);
+
+            } else if (label.c == '+') {
+                NFA nfa = operands.pop();
+                NFA plusNfa = nfa.plus();
+                operands.push(plusNfa);
+
+            } else if (label.c == '?') {
+                NFA nfa = operands.pop();
+                NFA quesNfa = nfa.question();
+                operands.push(quesNfa);
+            } else {
+                System.out.println("Encountered with known operator!!!! " +
+                        "Please make sure your regular expression only contains (* | + ?)");
             }
         }
         NFA nfa =  operands.pop();
@@ -65,13 +91,10 @@ public class NFA {
         char[] textArr = text.toCharArray();
 
         for (char c: textArr) {
-            if (PostFix.precedenceMap.containsKey(c))
-                throw new IllegalArgumentException("text contains the metacharacter '" + c + "'");
-
-            Set<Integer> matchSet = new HashSet<Integer>();
+            Set<Integer> matchSet = new HashSet<>();
             for (int v: epsilonDfs.closure()) {
                 for (DirectedEdge e: adj(v)) {
-                    if (e.label() == c || e.label() == '.') matchSet.add(e.to());
+                    if (e.label().isMatch(c)) matchSet.add(e.to());
                 }
             }
 
@@ -80,7 +103,7 @@ public class NFA {
             if(epsilonDfs.isEmpty()) return "";
         }
         // TreeSet take the advantage of sorting keys automatically
-        TreeSet<Integer> finalStates = new TreeSet<Integer>();
+        TreeSet<Integer> finalStates = new TreeSet<>();
         for (int v: epsilonDfs.closure()) {
             if (finalStateMap.containsKey(v))
                 finalStates.add(v);
@@ -90,36 +113,41 @@ public class NFA {
         return finalStateMap.get(finalStates.first());
     }
 
-    private NFA(char c) {
+    private NFA(Label label) {
         this.graph = new Graph(2);
-        this.finalStateMap = new HashMap<Integer, String>();
+        this.finalStateMap = new HashMap<>();
         finalStateMap.put(1, "");
-        addEdge(0, 1, c);
+        addEdge(0, 1, label);
     }
 
     private NFA(int V) {
         this.graph = new Graph(V);
-        this.finalStateMap = new HashMap<Integer, String>();
+        this.finalStateMap = new HashMap<>();
         finalStateMap.put(V - 1, "");
     }
 
-    public int V() {
+    int V() {
         return graph.V();
     }
 
-    public int E() {
+    int E() {
         return graph.E();
     }
 
-    public Iterable<DirectedEdge> edges() {
+    private Iterable<DirectedEdge> edges() {
         return graph.edges();
     }
 
-    public Iterable<DirectedEdge> adj(int v) {
+    private Iterable<DirectedEdge> adj(int v) {
         return graph.adj(v);
     }
 
-    private void addEdge(int from, int to, char label) {
+    public String patternName(int stateId) {
+        // TODO add exception
+        return finalStateMap.get(stateId);
+    }
+
+    private void addEdge(int from, int to, Label label) {
         DirectedEdge e = new DirectedEdge(from, to, label);
         graph.addEdge(e);
     }
@@ -128,10 +156,9 @@ public class NFA {
      * make new (NFA)* and return
      * @return new (NFA)*
      */
-    public NFA kleene() {
+    private NFA kleene() {
         NFA resNFA = new NFA(V() + 2);
-        // '_' is the wildcard character
-        resNFA.addEdge(0, 1, '_');
+        resNFA.addEdge(0, 1, Label.buildEpsilon());
 
         // copy edges from original NFA
         for (DirectedEdge e: edges()) {
@@ -139,15 +166,47 @@ public class NFA {
         }
 
         // add edge to final vertex
-        resNFA.addEdge(V(), V() + 1, '_');
+        resNFA.addEdge(V(), V() + 1, Label.buildEpsilon());
 
         // Loop back from last state of n to initial state of n.
-        resNFA.addEdge(V(), 1, '_');
+        resNFA.addEdge(V(), 1, Label.buildEpsilon());
 
         // Add empty transition from new initial state to new final state.
-        resNFA.addEdge(0, V() + 1, '_');
+        resNFA.addEdge(0, V() + 1, Label.buildEpsilon());
 
         return resNFA;
+    }
+
+    /**
+     * (a|b)?  occur zero or one time
+     * @return new nfa
+     */
+    private NFA question() {
+        NFA resNfa = new NFA(V() + 2);
+
+        resNfa.addEdge(0, 1, Label.buildEpsilon());
+        resNfa.addEdge(0, V() + 1, Label.buildEpsilon());
+        for (DirectedEdge e: edges()) {
+            resNfa.addEdge(e.from() + 1, e.to() + 1, e.label());
+        }
+        resNfa.addEdge(V(), V() + 1, Label.buildEpsilon());
+
+        return resNfa;
+    }
+
+    /**
+     * (a|b)+   occur one and more times
+     * @return new nfa
+     */
+    private NFA plus() {
+        NFA copyNfa = new NFA(V());
+        // copy self
+        for (DirectedEdge e: edges()) {
+            copyNfa.addEdge(e.from(), e.to(), e.label());
+        }
+
+        NFA kleeneNfa = kleene();
+        return copyNfa.concat(kleeneNfa);
     }
 
     /**
@@ -155,7 +214,7 @@ public class NFA {
      * @param another NFA as second operand
      * @return new NFA that concat two NFA
      */
-    public NFA concat(NFA another) {
+    private NFA concat(NFA another) {
         NFA resNFA = new NFA(this.V() + another.V());
         // copy edges from first NFA
         for (DirectedEdge e: this.edges()) {
@@ -163,7 +222,7 @@ public class NFA {
         }
 
         // add epsilon edge to concat two NFA
-        resNFA.addEdge(this.V() - 1, this.V(), '_');
+        resNFA.addEdge(this.V() - 1, this.V(), Label.buildEpsilon());
 
         // copy edges from second NFA
         for (DirectedEdge e: another.edges()) {
@@ -178,11 +237,11 @@ public class NFA {
      * @param another NFA as second operand
      * @return new NFA that union two NFA
      */
-    public NFA union(NFA another) {
+    private NFA union(NFA another) {
         NFA resNFA = new NFA(this.V() + another.V() + 2);
         int newFinalState = this.V() + another.V() + 1;
 
-        resNFA.addEdge(0, 1, '_');
+        resNFA.addEdge(0, 1, Label.buildEpsilon());
 
         // copy from first NFA
         for (DirectedEdge e: this.edges()) {
@@ -190,9 +249,9 @@ public class NFA {
         }
 
         // add epsilon edge to new final state
-        resNFA.addEdge(this.V(), newFinalState, '_');
+        resNFA.addEdge(this.V(), newFinalState, Label.buildEpsilon());
 
-        resNFA.addEdge(0, this.V() + 1, '_');
+        resNFA.addEdge(0, this.V() + 1, Label.buildEpsilon());
 
         for (DirectedEdge e: another.edges()) {
             int from = e.from() + this.V() + 1;
@@ -200,9 +259,46 @@ public class NFA {
             resNFA.addEdge(from, to, e.label());
         }
 
-        resNFA.addEdge(another.V() + this.V(), newFinalState, '_');
+        resNFA.addEdge(another.V() + this.V(), newFinalState, Label.buildEpsilon());
 
         return resNFA;
+    }
+
+    /**
+     * merge two NFA into one NFA with single source and multi finalState
+     * @param another NFA
+     * @return one NFA with single source and multi finalState. Notice that first NFA will have smaller finalState id.
+     */
+    public NFA merge(NFA another) {
+        NFA resNfa = new NFA(this.V() + another.V() + 1);
+
+        // add edge from source to first NFA
+        resNfa.addEdge(0, 1, Label.buildEpsilon());
+        // copy first NFA
+        for (DirectedEdge e: this.edges()) {
+            resNfa.addEdge(e.from() + 1, e.to() + 1, e.label());
+        }
+
+        // add edge from source to second NFA
+        resNfa.addEdge(0, this.V() + 1, Label.buildEpsilon());
+        // copy second NFA
+        for (DirectedEdge e: another.edges()) {
+            int from = e.from() + this.V() + 1;
+            int to  = e.to() + this.V() + 1;
+            resNfa.addEdge(from, to, e.label());
+        }
+
+        // copy first finalState and patter name
+        for (Map.Entry<Integer, String> entry: this.finalStateMap.entrySet()) {
+            resNfa.setPatternName(entry.getKey() + 1, entry.getValue());
+        }
+
+        // copy second finalState and patter name
+        for (Map.Entry<Integer, String> entry: another.finalStateMap.entrySet()) {
+            resNfa.setPatternName(entry.getKey() + this.V() + 1, entry.getValue());
+        }
+
+        return resNfa;
     }
 
     @Override
