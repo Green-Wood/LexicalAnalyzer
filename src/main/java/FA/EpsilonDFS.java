@@ -27,7 +27,7 @@ public class EpsilonDFS {
     private void dfs(Graph G, int v) {
         reachable.add(v);
         for (DirectedEdge e : G.adj(v)) {
-            if (!reachable.contains(e.to()) && e.label().isEpsilon)
+            if (!reachable.contains(e.to()) && e.isEpsilon())
                 dfs(G, e.to());
         }
     }

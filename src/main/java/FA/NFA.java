@@ -94,7 +94,8 @@ public class NFA {
             Set<Integer> matchSet = new HashSet<>();
             for (int v: epsilonDfs.closure()) {
                 for (DirectedEdge e: adj(v)) {
-                    if (e.label().isMatch(c)) matchSet.add(e.to());
+                    if (!e.isEpsilon() && e.label().isMatch(c))
+                        matchSet.add(e.to());
                 }
             }
 
@@ -158,7 +159,7 @@ public class NFA {
      */
     private NFA kleene() {
         NFA resNFA = new NFA(V() + 2);
-        resNFA.addEdge(0, 1, Label.buildEpsilon());
+        resNFA.addEdge(0, 1, null);
 
         // copy edges from original NFA
         for (DirectedEdge e: edges()) {
@@ -166,13 +167,13 @@ public class NFA {
         }
 
         // add edge to final vertex
-        resNFA.addEdge(V(), V() + 1, Label.buildEpsilon());
+        resNFA.addEdge(V(), V() + 1, null);
 
         // Loop back from last state of n to initial state of n.
-        resNFA.addEdge(V(), 1, Label.buildEpsilon());
+        resNFA.addEdge(V(), 1, null);
 
         // Add empty transition from new initial state to new final state.
-        resNFA.addEdge(0, V() + 1, Label.buildEpsilon());
+        resNFA.addEdge(0, V() + 1, null);
 
         return resNFA;
     }
@@ -184,12 +185,12 @@ public class NFA {
     private NFA question() {
         NFA resNfa = new NFA(V() + 2);
 
-        resNfa.addEdge(0, 1, Label.buildEpsilon());
-        resNfa.addEdge(0, V() + 1, Label.buildEpsilon());
+        resNfa.addEdge(0, 1, null);
+        resNfa.addEdge(0, V() + 1, null);
         for (DirectedEdge e: edges()) {
             resNfa.addEdge(e.from() + 1, e.to() + 1, e.label());
         }
-        resNfa.addEdge(V(), V() + 1, Label.buildEpsilon());
+        resNfa.addEdge(V(), V() + 1, null);
 
         return resNfa;
     }
@@ -222,7 +223,7 @@ public class NFA {
         }
 
         // add epsilon edge to concat two NFA
-        resNFA.addEdge(this.V() - 1, this.V(), Label.buildEpsilon());
+        resNFA.addEdge(this.V() - 1, this.V(), null);
 
         // copy edges from second NFA
         for (DirectedEdge e: another.edges()) {
@@ -241,7 +242,7 @@ public class NFA {
         NFA resNFA = new NFA(this.V() + another.V() + 2);
         int newFinalState = this.V() + another.V() + 1;
 
-        resNFA.addEdge(0, 1, Label.buildEpsilon());
+        resNFA.addEdge(0, 1, null);
 
         // copy from first NFA
         for (DirectedEdge e: this.edges()) {
@@ -249,9 +250,9 @@ public class NFA {
         }
 
         // add epsilon edge to new final state
-        resNFA.addEdge(this.V(), newFinalState, Label.buildEpsilon());
+        resNFA.addEdge(this.V(), newFinalState, null);
 
-        resNFA.addEdge(0, this.V() + 1, Label.buildEpsilon());
+        resNFA.addEdge(0, this.V() + 1, null);
 
         for (DirectedEdge e: another.edges()) {
             int from = e.from() + this.V() + 1;
@@ -259,7 +260,7 @@ public class NFA {
             resNFA.addEdge(from, to, e.label());
         }
 
-        resNFA.addEdge(another.V() + this.V(), newFinalState, Label.buildEpsilon());
+        resNFA.addEdge(another.V() + this.V(), newFinalState, null);
 
         return resNFA;
     }
@@ -273,14 +274,14 @@ public class NFA {
         NFA resNfa = new NFA(this.V() + another.V() + 1);
 
         // add edge from source to first NFA
-        resNfa.addEdge(0, 1, Label.buildEpsilon());
+        resNfa.addEdge(0, 1, null);
         // copy first NFA
         for (DirectedEdge e: this.edges()) {
             resNfa.addEdge(e.from() + 1, e.to() + 1, e.label());
         }
 
         // add edge from source to second NFA
-        resNfa.addEdge(0, this.V() + 1, Label.buildEpsilon());
+        resNfa.addEdge(0, this.V() + 1, null);
         // copy second NFA
         for (DirectedEdge e: another.edges()) {
             int from = e.from() + this.V() + 1;

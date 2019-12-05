@@ -8,21 +8,11 @@ package FA;
 public class Label {
     char c;
     boolean isMeta;
-    boolean isEpsilon;
-
-    static Label buildEpsilon() {
-        Label label = new Label();
-        label.isEpsilon = true;
-        return label;
-    }
-
-    Label(){}
 
     // TODO 有时间可以分成多个类，做\d之类的
     Label(char c, boolean isMeta) {
         this.c = c;
         this.isMeta = isMeta;
-        this.isEpsilon = false;
     }
 
     boolean isMatch(char c) {
