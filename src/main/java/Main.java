@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        File file = new File("test.txt");
+        File file = new File("pattern.txt");
         String test = "\\(\\)";
         try {
             Scanner in = new Scanner(file);

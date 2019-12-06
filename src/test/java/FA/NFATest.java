@@ -89,10 +89,10 @@ public class NFATest {
     @Test
     public void recognizeWS() {
         String pattern = "re";
-        String re = "( |\n|\r|\t)( |\n|\r|\t)*";
-        String text1 = "     ";
-        String text2 = "  \t   \n  \r ";
-        String text3 = "a\t";
+        String re = "[\t\n]+";
+        String text1 = "\t";
+        String text2 = "\n";
+        String text3 = " ";
         NFA nfa = NFA.builder(re, pattern);
         assertEquals(pattern, nfa.recognize(text1));
         assertEquals(pattern, nfa.recognize(text2));
@@ -168,5 +168,29 @@ public class NFATest {
         String text2 = "greenwood";
         assertEquals(pattern, nfa.recognize(text1));
         assertEquals("", nfa.recognize(text2));
+    }
+
+    @Test
+    public void recognizeAZ() {
+        String re = "[A-Za-z]";
+        String pattern = "re";
+        NFA nfa = NFA.builder(re, pattern);
+        String text1 = "a";
+        String text2 = "!";
+        assertEquals(pattern, nfa.recognize(text1));
+        assertEquals("", nfa.recognize(text2));
+    }
+
+    @Test
+    public void recognizeBracket() {
+        String re = "(a|b)*\\([b-zB-Z]\\.[0-9]\\)";
+        String pattern = "re";
+        NFA nfa = NFA.builder(re, pattern);
+        String text1 = "abba(T.2)";
+        String text2 = "abba(a.1)";
+        String text3 = "abba(a11)";
+        assertEquals(pattern, nfa.recognize(text1));
+        assertEquals("", nfa.recognize(text2));
+        assertEquals("", nfa.recognize(text3));
     }
 }
