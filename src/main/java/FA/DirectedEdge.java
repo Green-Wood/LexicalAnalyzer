@@ -30,6 +30,6 @@ public class DirectedEdge {
     }
 
     public String toString() {
-        return from + "->" + to + " Label: " + label.c;
+        return from + "->" + to + " Label: " + (label == null? "null": label.c);
     }
 }

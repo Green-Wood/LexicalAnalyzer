@@ -89,13 +89,15 @@ public class NFATest {
     @Test
     public void recognizeWS() {
         String pattern = "re";
-        String re = "[\\t\\n]+";
+        String re = "[\\t\\n\\|]+";
         String text1 = "\t";
         String text2 = "\n";
+        String text4 = "|";
         String text3 = " ";
         NFA nfa = NFA.builder(re, pattern);
         assertEquals(pattern, nfa.recognize(text1));
         assertEquals(pattern, nfa.recognize(text2));
+        assertEquals(pattern, nfa.recognize(text4));
         assertEquals("", nfa.recognize(text3));
     }
 
@@ -148,11 +150,11 @@ public class NFATest {
 
     @Test
     public void recognizeDoubleSlash() {
-        String re = "<\\\\a\\((a|b)\\)>";
+        String re = "\\\\|a";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
-        String text1 = "<\\a(b)>";
-        String text2 = "<\\a(b)>";
+        String text1 = "\\";
+        String text2 = "a";
         String text3 = "<\\a()>";
         assertEquals(pattern, nfa.recognize(text1));
         assertEquals(pattern, nfa.recognize(text2));

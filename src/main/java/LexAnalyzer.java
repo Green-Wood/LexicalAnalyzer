@@ -25,7 +25,7 @@ public class LexAnalyzer {
     Map<String, String> patternReMap;
     NFA nfa;
 
-    public LexAnalyzer(String regFilename) throws FileNotFoundException {
+    public LexAnalyzer(String regFilename) throws FileNotFoundException, RegExpException {
         rawPatternReMap = new HashMap<>();
         patternReMap = new HashMap<>();
         patternList = new ArrayList<>();
@@ -46,7 +46,7 @@ public class LexAnalyzer {
      * For testing
      * @param regs to build lex analyzer
      */
-    public LexAnalyzer(List<String> regs) {
+    public LexAnalyzer(List<String> regs) throws RegExpException {
         rawPatternReMap = new HashMap<>();
         patternReMap = new HashMap<>();
         patternList = new ArrayList<>();
@@ -93,7 +93,7 @@ public class LexAnalyzer {
                     }
                 }
                 // TODO if realReg is null throw exception
-                sb.append(realReg);
+                sb.append("(").append(realReg).append(")");
                 i = j;
             } else {
                 sb.append(c);
@@ -108,14 +108,21 @@ public class LexAnalyzer {
     /**
      * construct NFA for each regular expression and merge them
      */
-    private void initNFA() {
+    private void initNFA() throws RegExpException {
         String firstPattern = patternList.get(0);
         nfa = NFA.builder(patternReMap.get(firstPattern), firstPattern);
 
         for (int i = 1; i < patternList.size(); i++) {
             String pattern = patternList.get(i);
             String regExp = patternReMap.get(pattern);
-            NFA nextNfa = NFA.builder(regExp, pattern);
+            NFA nextNfa;
+            try {
+                nextNfa = NFA.builder(regExp, pattern);
+            } catch (NoSuchElementException e) {
+                throw new RegExpException("Parsing failed, please check your \nPattern: " +
+                        pattern + "\nRegExp: " + regExp + "\n");
+            }
+
             nfa = nfa.merge(nextNfa);
         }
     }
@@ -151,7 +158,7 @@ public class LexAnalyzer {
                 // in the end, we cannot match any pattern
                 int[] tup = findSingleLine(i, content);
                 String msg = String.format("Grammar seem to be wrong at line: %d\n", lineNum);
-                msg += content.substring(tup[0], i) + ANSI_RED + content.charAt(i) + ANSI_RESET + content.substring(i + 1, tup[1]);
+                msg += content.substring(tup[0], tup[1]) + "\n" + getHint(i - tup[0]);
                 throw new GrammarException(msg);
             }
             // record lineNumber
@@ -164,14 +171,24 @@ public class LexAnalyzer {
         return tokenList;
     }
 
+    private String getHint(int size) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            sb.append(' ');
+        }
+        sb.append('^');
+        return sb.toString();
+    }
+
     private int[] findSingleLine(int i, String content) {
         int begin = i, end = i;
-        for (; begin >= 0; begin--) {
+        for (; begin > 0; begin--) {
             if (content.charAt(begin) == '\n') break;
         }
         for (; end < content.length(); end++) {
             if (content.charAt(end) == '\n') break;
         }
+        if (begin > 0) begin++;
         return new int[]{begin, end};
     }
 }

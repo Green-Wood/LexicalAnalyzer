@@ -1,10 +1,11 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Token {
-    private String pattern;
-    private String text;
-    private int id;
+    public String pattern;
+    public String text;
+    public int id;
     private static Map<String, Integer> patternIdMap = new HashMap<String, Integer>();
 
     public Token(String pattern, String text) {

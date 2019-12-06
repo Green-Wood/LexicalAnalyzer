@@ -5,7 +5,7 @@ import java.util.*;
 public class Preprocess {
 
     /** Operators precedence map. */
-    public static final Map<Character, Integer> precedenceMap = new HashMap<Character, Integer>();
+    public static final Map<Character, Integer> precedenceMap = new HashMap<>();
     static {
         precedenceMap.put('(', 1);
         precedenceMap.put('|', 2);
@@ -13,7 +13,6 @@ public class Preprocess {
         precedenceMap.put('?', 4);
         precedenceMap.put('*', 4);
         precedenceMap.put('+', 4);
-        precedenceMap.put('^', 5);
     }
 
     /**
@@ -95,7 +94,8 @@ public class Preprocess {
             sb.append(c1);
 
             // can we put concat operator between c1 and c2 ?
-            boolean notMeta = i == 0 || regex.charAt(i-1) != '\\';
+            boolean hasDoubleSlash = i > 1 && regex.charAt(i-1) == '\\' && regex.charAt(i-2) == '\\';
+            boolean notMeta = i == 0 || regex.charAt(i-1) != '\\' || hasDoubleSlash;
             boolean isFirstSlash = c1 == '\\' && notMeta;
             boolean isC1Operator = (c1 == '(' || binaryOperators.contains(c1)) && notMeta;
             boolean isC2Operator = allOperators.contains(c2) || c2 == ')';
