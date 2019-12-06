@@ -89,7 +89,7 @@ public class NFATest {
     @Test
     public void recognizeWS() {
         String pattern = "re";
-        String re = "[\t\n]+";
+        String re = "[\\t\\n]+";
         String text1 = "\t";
         String text2 = "\n";
         String text3 = " ";

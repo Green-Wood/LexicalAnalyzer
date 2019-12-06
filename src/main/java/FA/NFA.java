@@ -36,7 +36,7 @@ public class NFA {
      * @return NFA
      */
     public static NFA builder(String regExp, String pattern) {
-        List<Label> postfixRegExp = PostFix.toPostfix(regExp);
+        List<Label> postfixRegExp = Preprocess.toPostfix(regExp);
 
         Deque<NFA> operands = new ArrayDeque<>();
 

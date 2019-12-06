@@ -23,7 +23,7 @@ public class LexAnalyzer {
     private Map<String, String> rawPatternReMap;
     private List<String> patternList;
     Map<String, String> patternReMap;
-    private NFA nfa;
+    NFA nfa;
 
     public LexAnalyzer(String regFilename) throws FileNotFoundException {
         rawPatternReMap = new HashMap<>();
@@ -46,7 +46,7 @@ public class LexAnalyzer {
      * For testing
      * @param regs to build lex analyzer
      */
-    public LexAnalyzer(Set<String> regs) {
+    public LexAnalyzer(List<String> regs) {
         rawPatternReMap = new HashMap<>();
         patternReMap = new HashMap<>();
         patternList = new ArrayList<>();

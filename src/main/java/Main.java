@@ -1,23 +1,13 @@
-import FA.PostFix;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.io.IOException;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
-        File file = new File("pattern.txt");
-        String test = "\\(\\)";
+    public static void main(String[] args) throws IOException {
+        LexAnalyzer analyzer = new LexAnalyzer("pattern.txt");
         try {
-            Scanner in = new Scanner(file);
-            while (in.hasNextLine()) {
-                String s = in.nextLine();
-                assert test.equals(s);
-                System.out.println(s);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            List<Token> tokenList = analyzer.analyze("text.txt");
+        } catch (GrammarException e) {
+            System.out.println(e.getMessage());
         }
-
     }
 }

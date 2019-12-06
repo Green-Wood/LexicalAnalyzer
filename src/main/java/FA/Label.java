@@ -11,7 +11,14 @@ public class Label {
 
     // TODO 有时间可以分成多个类，做\d之类的
     Label(char c, boolean isMeta) {
-        this.c = c;
+        if (c == 'n' && isMeta) {
+            this.c = '\n';
+            this.isMeta = false;
+        } else if (c == 't' && isMeta) {
+            this.c = '\t';
+        } else {
+            this.c = c;
+        }
         this.isMeta = isMeta;
     }
 

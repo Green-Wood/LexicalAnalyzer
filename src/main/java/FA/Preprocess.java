@@ -2,7 +2,7 @@ package FA;
 
 import java.util.*;
 
-public class PostFix {
+public class Preprocess {
 
     /** Operators precedence map. */
     public static final Map<Character, Integer> precedenceMap = new HashMap<Character, Integer>();
@@ -84,7 +84,6 @@ public class PostFix {
      * Transform regular expression by inserting a '《' as explicit concatenation
      * operator.
      */
-    // TODO  1、识别[]
     public static String addConcat(String regex) {
         StringBuilder sb = new StringBuilder();
         List<Character> allOperators = Arrays.asList('|', '?', '+', '*', '^', ')');
