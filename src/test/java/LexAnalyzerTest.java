@@ -70,7 +70,5 @@ public class LexAnalyzerTest {
     public void testFile3() throws IOException, GrammarException, RegExpException {
         LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
         List<Token> tokenList = lexAnalyzer.analyze("resources/input3.txt");
-        assertTrue(isEqual(tokenList.get(6), "literal", "\"hello world\"", 0));
-        assertTrue(isEqual(tokenList.get(15), "literal", "'H'", 1));
     }
 }

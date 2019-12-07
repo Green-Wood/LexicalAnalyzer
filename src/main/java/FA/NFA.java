@@ -2,32 +2,14 @@ package FA;
 
 import java.util.*;
 
-public class NFA {
-    private Graph graph;
-    // for single finalState NFA, finalState index always equals to V-1
-    private Map<Integer, String> finalStateMap;
+public class NFA extends FA{
 
-
-    private void validateRegExp(String regExp) {
-        // TODO add validation in the future
+    public NFA(int V) {
+        super(V);
     }
 
-    /**
-     * set pattern name for Token usage
-     * @param name pattern name
-     */
-    private void setPatternName(String name) {
-        finalStateMap.put(V() - 1, name);
-    }
-
-    /**
-     * set pattern name for Token usage given stateId,
-     * which can be used to assign multi pattern name with multi finalState
-     * @param stateId finalState id
-     * @param name pattern name
-     */
-    private void setPatternName(int stateId, String name) {
-        finalStateMap.put(stateId, name);
+    public NFA(Label label) {
+        super(label);
     }
 
     /**
@@ -86,6 +68,7 @@ public class NFA {
      * @param text text that you need to recognize
      * @return if this text matches regular expression, return pattern name. else return ""
      */
+    @Override
     public String recognize(String text) {
         EpsilonDFS epsilonDfs = new EpsilonDFS(graph, 0);
         char[] textArr = text.toCharArray();
@@ -112,45 +95,6 @@ public class NFA {
         if (finalStates.isEmpty()) return "";
         // choose pattern name corresponding to the minimum id when multi finalState encountered
         return finalStateMap.get(finalStates.first());
-    }
-
-    private NFA(Label label) {
-        this.graph = new Graph(2);
-        this.finalStateMap = new HashMap<>();
-        finalStateMap.put(1, "");
-        addEdge(0, 1, label);
-    }
-
-    private NFA(int V) {
-        this.graph = new Graph(V);
-        this.finalStateMap = new HashMap<>();
-        finalStateMap.put(V - 1, "");
-    }
-
-    int V() {
-        return graph.V();
-    }
-
-    int E() {
-        return graph.E();
-    }
-
-    private Iterable<DirectedEdge> edges() {
-        return graph.edges();
-    }
-
-    private Iterable<DirectedEdge> adj(int v) {
-        return graph.adj(v);
-    }
-
-    public String patternName(int stateId) {
-        // TODO add exception
-        return finalStateMap.get(stateId);
-    }
-
-    private void addEdge(int from, int to, Label label) {
-        DirectedEdge e = new DirectedEdge(from, to, label);
-        graph.addEdge(e);
     }
 
     /**

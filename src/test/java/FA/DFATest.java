@@ -4,30 +4,43 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class NFATest {
+public class DFATest {
 
     @Test
-    public void builder() {
-        String re = "((a.b)|c)*";
-        NFA nfa = NFA.builder(re, "");
-        assertEquals(12, nfa.V());
-        assertEquals(14, nfa.E());
+    public void convertFromNFA() {
+        String re = "a|b";
+        String pattern = "re";
+        NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(2, dfa.E());
+        assertEquals(3, dfa.V());
+        for (DirectedEdge e: dfa.edges()) {
+            assertFalse(e.isEpsilon());
+        }
     }
 
     @Test
     public void kleene() {
         String re = "a**";
         NFA nfa = NFA.builder(re, "");
-        assertEquals(6, nfa.V());
-        assertEquals(9, nfa.E());
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(2, dfa.E());
+        assertEquals(2, dfa.V());
+        for (DirectedEdge e: dfa.edges()) {
+            assertFalse(e.isEpsilon());
+        }
     }
 
     @Test
     public void concat() {
         String re = "a|b|c|d";
         NFA nfa = NFA.builder(re, "");
-        assertEquals(14, nfa.V());
-        assertEquals(16, nfa.E());
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(4, dfa.E());
+        assertEquals(5, dfa.V());
+        for (DirectedEdge e: dfa.edges()) {
+            assertFalse(e.isEpsilon());
+        }
     }
 
     @Test
@@ -45,8 +58,9 @@ public class NFATest {
         String text1 = "a";
         String text2 = "ababb";
         NFA nfa = NFA.builder(re, pattern);
-        assertEquals("", nfa.recognize(text1));
-        assertEquals(pattern, nfa.recognize(text2));
+        DFA dfa = DFA.builder(nfa);
+        assertEquals("", dfa.recognize(text1));
+        assertEquals(pattern, dfa.recognize(text2));
     }
 
     @Test
@@ -57,9 +71,10 @@ public class NFATest {
         String text2 = "ab";
         String text3 = "abb";
         NFA nfa = NFA.builder(re, pattern);
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals(pattern, nfa.recognize(text2));
-        assertEquals("", nfa.recognize(text3));
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals(pattern, dfa.recognize(text2));
+        assertEquals("", dfa.recognize(text3));
     }
 
     @Test
@@ -69,9 +84,11 @@ public class NFATest {
         String text1 = "ababab";
         String text2 = "bbbbba";
         NFA nfa = NFA.builder(re, pattern);
-        assertEquals("", nfa.recognize(text1));
-        assertEquals(pattern, nfa.recognize(text2));
+        DFA dfa = DFA.builder(nfa);
+        assertEquals("", dfa.recognize(text1));
+        assertEquals(pattern, dfa.recognize(text2));
     }
+
 
     @Test
     public void recognizeWS() {
@@ -82,10 +99,11 @@ public class NFATest {
         String text4 = "|";
         String text3 = " ";
         NFA nfa = NFA.builder(re, pattern);
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals(pattern, nfa.recognize(text2));
-        assertEquals(pattern, nfa.recognize(text4));
-        assertEquals("", nfa.recognize(text3));
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals(pattern, dfa.recognize(text2));
+        assertEquals(pattern, dfa.recognize(text4));
+        assertEquals("", dfa.recognize(text3));
     }
 
     @Test
@@ -102,8 +120,9 @@ public class NFATest {
         NFA nfa2 = NFA.builder(re2, pattern2);
         NFA nfa = nfa1.merge(nfa2);
 
-        assertEquals(pattern1, nfa.recognize(text1));
-        assertEquals(pattern2, nfa.recognize(text2));
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(pattern1, dfa.recognize(text1));
+        assertEquals(pattern2, dfa.recognize(text2));
     }
 
     @Test
@@ -120,8 +139,9 @@ public class NFATest {
         NFA nfa2 = NFA.builder(re2, pattern2);
         NFA nfa = nfa1.merge(nfa2);
 
-        assertEquals(pattern1, nfa.recognize(text1));
-        assertEquals(pattern1, nfa.recognize(text2));
+        DFA dfa = DFA.builder(nfa);
+        assertEquals(pattern1, dfa.recognize(text1));
+        assertEquals(pattern1, dfa.recognize(text2));
     }
 
     @Test
@@ -129,10 +149,11 @@ public class NFATest {
         String re = "\\(0\\)\\*2";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
         String text1 = "(0)*2";
         String text2 = "(0)";
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals("", nfa.recognize(text2));
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals("", dfa.recognize(text2));
     }
 
     @Test
@@ -140,12 +161,13 @@ public class NFATest {
         String re = "\\\\|a";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
         String text1 = "\\";
         String text2 = "a";
         String text3 = "<\\a()>";
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals(pattern, nfa.recognize(text2));
-        assertEquals("", nfa.recognize(text3));
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals(pattern, dfa.recognize(text2));
+        assertEquals("", dfa.recognize(text3));
     }
 
     @Test
@@ -153,10 +175,11 @@ public class NFATest {
         String re = "green_wood";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
         String text1 = "green_wood";
         String text2 = "greenwood";
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals("", nfa.recognize(text2));
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals("", dfa.recognize(text2));
     }
 
     @Test
@@ -164,10 +187,11 @@ public class NFATest {
         String re = "[A-Za-z]";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
         String text1 = "a";
         String text2 = "!";
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals("", nfa.recognize(text2));
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals("", dfa.recognize(text2));
     }
 
     @Test
@@ -175,12 +199,13 @@ public class NFATest {
         String re = "(a|b)*\\([b-zB-Z]\\.[0-9]\\)";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
         String text1 = "abba(T.2)";
         String text2 = "abba(a.1)";
         String text3 = "abba(a11)";
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals("", nfa.recognize(text2));
-        assertEquals("", nfa.recognize(text3));
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals("", dfa.recognize(text2));
+        assertEquals("", dfa.recognize(text3));
     }
 
     @Test
@@ -188,9 +213,21 @@ public class NFATest {
         String re = "aa|bc";
         String pattern = "re";
         NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
         String text1 = "aa";
         String text2 = "abc";
-        assertEquals(pattern, nfa.recognize(text1));
-        assertEquals("", nfa.recognize(text2));
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals("", dfa.recognize(text2));
+    }
+
+    @Test
+    public void minimizeUnion() {
+        String re = "a|b|c|d|e";
+        String pattern = "re";
+        NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
+        dfa = dfa.minimize();
+        assertEquals(5, dfa.E());
+        assertEquals(2, dfa.V());
     }
 }

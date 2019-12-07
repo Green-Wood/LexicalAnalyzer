@@ -36,7 +36,7 @@ public class EpsilonDFS {
      * return vertex that are reachable from source
      * @return vertex
      */
-    public Iterable<Integer> closure() {
+    public Set<Integer> closure() {
         return reachable;
     }
 

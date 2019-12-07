@@ -76,18 +76,17 @@ public class Graph {
         return adj[v];
     }
 
-    /**
-     * Returns the number of directed edges incident from vertex {@code v}.
-     * This is known as the <em>outdegree</em> of vertex {@code v}.
-     *
-     * @param  v the vertex
-     * @return the outdegree of vertex {@code v}
-     * @throws IllegalArgumentException unless {@code 0 <= v < V}
-     */
-    public int outdegree(int v) {
-        validateVertex(v);
-        return adj[v].size();
+    public Iterable<Label> connectedLabel(Iterable<Integer> set) {
+        Set<Label> labelSet= new HashSet<>();
+        for (int v: set) {
+            for (DirectedEdge e: adj(v)) {
+                if (e.label() != null) labelSet.add(e.label());
+            }
+        }
+        return labelSet;
     }
+
+
 
     /**
      * Returns all directed edges in this edge-weighted digraph.

@@ -2,6 +2,7 @@ package FA;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -28,11 +29,21 @@ public class Label {
     }
 
     boolean isMatch(char c) {
-        if (this.c == '.' && !isEscape) {
-            // all matches
-            return true;
-        }
         return this.c == c;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Label)) return false;
+        Label label = (Label) o;
+        return c == label.c &&
+                isEscape == label.isEscape;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(c, isEscape);
     }
 
     boolean isOperator() {
