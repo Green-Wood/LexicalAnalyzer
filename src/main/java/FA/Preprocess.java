@@ -22,7 +22,7 @@ public class Preprocess {
      * @return corresponding precedence
      */
     private static int getPrecedence(Label label) {
-        if (label.isMeta) return 6;
+        if (label.isEscape) return 6;
         Integer precedence = precedenceMap.get(label.c);
         return precedence == null ? 6 : precedence;
     }

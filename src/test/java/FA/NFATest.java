@@ -195,4 +195,15 @@ public class NFATest {
         assertEquals("", nfa.recognize(text2));
         assertEquals("", nfa.recognize(text3));
     }
+
+    @Test
+    public void recognizeUnionPriority() {
+        String re = "aa|bc";
+        String pattern = "re";
+        NFA nfa = NFA.builder(re, pattern);
+        String text1 = "aa";
+        String text2 = "abc";
+        assertEquals(pattern, nfa.recognize(text1));
+        assertEquals("", nfa.recognize(text2));
+    }
 }

@@ -1,3 +1,5 @@
+import exception.GrammarException;
+import exception.RegExpException;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -16,31 +18,9 @@ public class LexAnalyzerTest {
         regs.add("id        {letter}({letter}|{digit})*");
     }
 
-    private static List<String> javaRegs = Arrays.asList(
-            "delim -> [\\t\\r\\n ]",
-            "ws -> {delim}+",
-            "digit -> 0|1|2|3|4|5|6|7|8|9",
-            "digits -> {digit}+",
-            "optionalFraction -> .{digits}|ε",
-            "optionalExponent -> (E(+|-|ε){digits})|ε",
-            "number -> {digits}{optionalFraction}{optionalExponent}",
-            "key -> abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|strictfp|short|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while",
-            "letter_ -> [A-Za-z_]",
-            "id -> {letter_}({letter_}|{digit})*",
-            "operation -> ~|!|-|++|--"+
-            "|+|-|\\*|/|%"+
-            "|?|:"+
-            "|==|!=|>|<|>=|<="+
-            "|&|\\||^"+
-            "|&&|\\|\\|"+
-            "|=|+=|-=|\\*=|/=|%=|&=|^=|\\|=|<<=|>>="+
-            "|<<|>>|>>>",
-            "punctuation -> \\(|\\)|\\{|\\}|[|]|;|\"|'|,|."
-    );
-
     @Test
     public void parseFile() throws FileNotFoundException, RegExpException {
-        LexAnalyzer lexAnalyzer = new LexAnalyzer("pattern.txt");
+        LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
         assertEquals("[\\t\\r\\n ]", lexAnalyzer.patternReMap.get("delim"));
         assertEquals("([\\t\\r\\n ])+", lexAnalyzer.patternReMap.get("ws"));
         assertEquals("[A-Za-z_]", lexAnalyzer.patternReMap.get("letter_"));
@@ -61,28 +41,36 @@ public class LexAnalyzerTest {
         assertEquals("id", lexAnalyzer.nfa.recognize(text4));
     }
 
-    boolean isEqual(Token token, String pattern, String text, int id) {
-        return token.pattern.equals(pattern) && token.text.equals(text) && token.id == id;
+    boolean isEqual(Token token, String pattern, String lexeme, int id) {
+        return token.pattern.equals(pattern) && token.lexeme.equals(lexeme) && token.id == id;
     }
 
     @Test
     public void testFile1() throws IOException, GrammarException, RegExpException {
-        LexAnalyzer lexAnalyzer = new LexAnalyzer("pattern.txt");
-        List<Token> tokenList = lexAnalyzer.analyze("test1.txt");
+        LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
+        List<Token> tokenList = lexAnalyzer.analyze("resources/input1.txt");
         assertTrue(isEqual(tokenList.get(0), "key", "public", 0));
         assertTrue(isEqual(tokenList.get(27), "id", "a", 4));
         assertTrue(isEqual(tokenList.get(39), "number", "2e-10", 2));
     }
 
     @Test
-    public void testFile12() throws IOException, RegExpException {
-        LexAnalyzer lexAnalyzer = new LexAnalyzer("pattern.txt");
+    public void testFile2() throws IOException, RegExpException {
+        LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
         try {
-            lexAnalyzer.analyze("test2.txt");
+            lexAnalyzer.analyze("resources/input2.txt");
         } catch (GrammarException e) {
-            assertEquals("Grammar seem to be wrong at line: 4\n" +
+            assertEquals("Regular expressions fail to match at line: 4\n" +
                     "        String s = `hello`;\n" +
                     "                   ^", e.getMessage());
         }
+    }
+
+    @Test
+    public void testFile3() throws IOException, GrammarException, RegExpException {
+        LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
+        List<Token> tokenList = lexAnalyzer.analyze("resources/input3.txt");
+        assertTrue(isEqual(tokenList.get(6), "literal", "\"hello world\"", 0));
+        assertTrue(isEqual(tokenList.get(15), "literal", "'H'", 1));
     }
 }

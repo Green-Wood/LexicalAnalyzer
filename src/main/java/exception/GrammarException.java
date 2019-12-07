@@ -1,3 +1,5 @@
+package exception;
+
 public class GrammarException extends Exception {
     public GrammarException() {
     }

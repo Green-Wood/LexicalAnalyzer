@@ -6,7 +6,7 @@ public class NFA {
     private Graph graph;
     // for single finalState NFA, finalState index always equals to V-1
     private Map<Integer, String> finalStateMap;
-    private static Set<Character> operatorSet = new HashSet<>(Arrays.asList('*', '|', '《', '+', '?'));
+
 
     private void validateRegExp(String regExp) {
         // TODO add validation in the future
@@ -41,7 +41,7 @@ public class NFA {
         Deque<NFA> operands = new ArrayDeque<>();
 
         for(Label label : postfixRegExp) {
-            if (label.isMeta || !operatorSet.contains(label.c)) {
+            if (!label.isOperator()) {
                 operands.push(new NFA(label));
 
             } else if (label.c == '*') {

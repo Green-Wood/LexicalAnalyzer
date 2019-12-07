@@ -1,4 +1,6 @@
 import FA.NFA;
+import exception.GrammarException;
+import exception.RegExpException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -88,7 +90,10 @@ public class LexAnalyzer {
                 String realReg = null;
                 for (; j < regExp.length(); j++) {
                     if (regExp.charAt(j) == '}') {
-                        realReg = parseRecursive(regExp.substring(i + 1, j));
+                        String needPattern = regExp.substring(i + 1, j);
+                        if (needPattern.equals(pattern))
+                            throw new StackOverflowError("Recursive definition" + pattern + "can not exist!");
+                        realReg = parseRecursive(needPattern);
                         break;
                     }
                 }
@@ -140,7 +145,7 @@ public class LexAnalyzer {
         int i = 0;
         while (i < content.length()) {
             int j = i + 1;
-            String lastMatchesText = null;
+            String lastMatchesLexeme = null;
             String lastMatchesPattern = null;
             int lastJ = j;
             while (j <= content.length()) {
@@ -148,29 +153,34 @@ public class LexAnalyzer {
                 String pattern = nfa.recognize(text);
                 if (!pattern.equals("")) {
                     lastMatchesPattern = pattern;
-                    lastMatchesText = text;
+                    lastMatchesLexeme = text;
                     lastJ = j;
                 }
                 j += 1;
             }
 
-            if (lastMatchesText == null) {
+            if (lastMatchesLexeme == null) {
                 // in the end, we cannot match any pattern
                 int[] tup = findSingleLine(i, content);
-                String msg = String.format("Grammar seem to be wrong at line: %d\n", lineNum);
+                String msg = String.format("Regular expressions fail to match at line: %d\n", lineNum);
                 msg += content.substring(tup[0], tup[1]) + "\n" + getHint(i - tup[0]);
                 throw new GrammarException(msg);
             }
             // record lineNumber
-            if (lastMatchesText.contains("\n")) lineNum++;
+            if (lastMatchesLexeme.contains("\n")) lineNum++;
 
-            tokenList.add(new Token(lastMatchesPattern, lastMatchesText));
+            tokenList.add(new Token(lastMatchesPattern, lastMatchesLexeme));
             i = lastJ;
         }
 
         return tokenList;
     }
 
+    /**
+     * get a string contains '^' to show where is wrong
+     * @param size size of blank space
+     * @return
+     */
     private String getHint(int size) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < size; i++) {

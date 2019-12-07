@@ -1,3 +1,5 @@
+package exception;
+
 public class RegExpException extends Exception {
     public RegExpException() {
     }
