@@ -9,6 +9,11 @@ public class DFA extends FA{
         super(V);
     }
 
+    /**
+     * construct a new DFA based on NFA
+     * @param nfa
+     * @return
+     */
     public static DFA builder(NFA nfa) {
         // map between old graph set to new graph id
         Map<Set<Integer>, Integer> stateIdMap = new HashMap<>();
@@ -101,6 +106,11 @@ public class DFA extends FA{
         return finalStateMap.get(currentState);
     }
 
+    /**
+     * minimize the state of current DFA using
+     * HopCroft’s algorithm (https://en.wikipedia.org/wiki/DFA_minimization)
+     * @return new DFA with minimal state
+     */
     public DFA minimize() {
         List<Set<Integer>> P = new ArrayList<>();
         Queue<Set<Integer>> W = new ArrayDeque<>();
@@ -170,6 +180,7 @@ public class DFA extends FA{
             sortP.add(P.get(i));
         }
 
+        // construct edges in new DFA
         for (int i = 0; i < sortP.size(); i++) {
             int represent = findRepresent(sortP.get(i));
             for (DirectedEdge e: outEdges(represent)) {
@@ -178,6 +189,7 @@ public class DFA extends FA{
             }
         }
 
+        // set new finalStateMap
         for (Map.Entry<Integer, String> entry: finalStateMap.entrySet()) {
             int setId = findSetByVertex(entry.getKey(), sortP);
             dfa.setPatternName(setId, entry.getValue());

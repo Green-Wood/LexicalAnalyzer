@@ -86,18 +86,6 @@ public class Graph {
         return inEdges[v];
     }
 
-    public Iterable<Label> connectedLabel(Iterable<Integer> set) {
-        Set<Label> labelSet= new HashSet<>();
-        for (int v: set) {
-            for (DirectedEdge e: outEdges(v)) {
-                if (e.label() != null) labelSet.add(e.label());
-            }
-        }
-        return labelSet;
-    }
-
-
-
     /**
      * Returns all directed edges in this edge-weighted digraph.
      * To iterate over the edges in this edge-weighted digraph, use foreach notation:

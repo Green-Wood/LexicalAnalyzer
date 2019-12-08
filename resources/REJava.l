@@ -3,8 +3,13 @@ ws      {delim}+
 number  {digits}(.{digits})?(e(\+|-)?{digits})?
 digit   [0-9]
 digits  {digit}+
-key     abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|strictfp|short|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while
+primitive_type      boolean|byte|char|double|float|int|long|short
+control_stmt   break|case|continue|default|do|else|for|if|instanceof|return|switch|while
+modifier       abstract|class|extends|final|implements|interface|native|new|static|strictfp|synchronized|transient|volatile
+key_words     assert|catch|const|enum|finally|goto|import|package|private|protected|public|super|this|throw|throws|try|void
+reserved_words    false|true|null|{key_words}
 id      {letter_}({letter_}|{digit})*
 letter_     [A-Za-z_]
-operator       ~|!|-|\+\+|--|\+|-|\*|/|%|\?|\\|:|==|!=|>|<|>=|<=|=|\+=|-=|\*=|/=|%=|&=|^=|\|=|<<=|>>=|<<|>>|>>>|&|\||^|&&
+arithmetic_op       ~|-|\+\+|--|\+|-|\*|/|%|=|\+=|-=|\*=|/=|%=|&=|^=|\|=|<<=|>>=|<<|>>|>>>|&|\||^
+bool_op         \?|\\|:|==|!=|>|<|>=|<=|&&|!|\|\|
 punctuation     \(|\)|\{|\}|\[|\]|;|"|'|,|.

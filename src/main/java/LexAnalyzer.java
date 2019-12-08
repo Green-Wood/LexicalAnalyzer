@@ -1,7 +1,7 @@
 import FA.DFA;
 import FA.FA;
 import FA.NFA;
-import exception.GrammarException;
+import exception.MatchingException;
 import exception.RegExpException;
 
 import java.io.File;
@@ -148,7 +148,7 @@ public class LexAnalyzer {
         return new String(encoded, encoding);
     }
 
-    public List<Token> analyze(String textFileName) throws IOException, GrammarException {
+    public List<Token> analyze(String textFileName) throws IOException, MatchingException {
         String content = readFile(textFileName, StandardCharsets.UTF_8);
         List<Token> tokenList = new ArrayList<>();
 
@@ -175,7 +175,7 @@ public class LexAnalyzer {
                 int[] tup = findSingleLine(i, content);
                 String msg = String.format("Regular expressions fail to match at line: %d\n", lineNum);
                 msg += content.substring(tup[0], tup[1]) + "\n" + getHint(i - tup[0]);
-                throw new GrammarException(msg);
+                throw new MatchingException(msg);
             }
             // record lineNumber
             if (lastMatchesLexeme.contains("\n")) lineNum++;

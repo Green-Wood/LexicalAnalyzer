@@ -1,4 +1,4 @@
-import exception.GrammarException;
+import exception.MatchingException;
 import exception.RegExpException;
 
 import java.io.IOException;
@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Main {
-    public static void main(String[] args) throws IOException, RegExpException, GrammarException {
+    public static void main(String[] args) throws IOException, RegExpException, MatchingException {
         LexAnalyzer analyzer = new LexAnalyzer("resources/REJava.l");
-        List<Token> tokenList = analyzer.analyze("resources/input1.txt");
+        List<Token> tokenList = analyzer.analyze("resources/input2.txt");
         List<String> tokenStr = tokenList.stream()
                 .filter(token -> !token.pattern.equals("ws") && !token.pattern.equals("delim"))
                 .map(Token::toString)
