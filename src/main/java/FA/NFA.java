@@ -70,31 +70,31 @@ public class NFA extends FA{
      */
     @Override
     public String recognize(String text) {
-        EpsilonDFS epsilonDfs = new EpsilonDFS(graph, 0);
+        EpsilonBFS epsilonBFS = new EpsilonBFS(graph, 0);
         char[] textArr = text.toCharArray();
 
         for (char c: textArr) {
             Set<Integer> matchSet = new HashSet<>();
-            for (int v: epsilonDfs.closure()) {
-                for (DirectedEdge e: adj(v)) {
+            for (int v: epsilonBFS.closure()) {
+                for (DirectedEdge e: outEdges(v)) {
                     if (!e.isEpsilon() && e.label().isMatch(c))
                         matchSet.add(e.to());
                 }
             }
 
-            epsilonDfs = new EpsilonDFS(graph, matchSet);
+            epsilonBFS = new EpsilonBFS(graph, matchSet);
             // optimization
-            if(epsilonDfs.isEmpty()) return "";
+            if(epsilonBFS.isEmpty()) return "";
         }
         // TreeSet take the advantage of sorting keys automatically
-        TreeSet<Integer> finalStates = new TreeSet<>();
-        for (int v: epsilonDfs.closure()) {
+        Queue<Integer> finalStates = new PriorityQueue<>();
+        for (int v: epsilonBFS.closure()) {
             if (finalStateMap.containsKey(v))
                 finalStates.add(v);
         }
         if (finalStates.isEmpty()) return "";
         // choose pattern name corresponding to the minimum id when multi finalState encountered
-        return finalStateMap.get(finalStates.first());
+        return finalStateMap.get(finalStates.poll());
     }
 
     /**

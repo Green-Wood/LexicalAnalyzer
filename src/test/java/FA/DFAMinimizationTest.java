@@ -208,4 +208,37 @@ public class DFAMinimizationTest {
         assertEquals(3, dfa.V());
     }
 
+    @Test
+    public void recognizeMultiReInOrder2() {
+        String pattern1 = "delim";
+        String re1 = "\\n| ";
+        String pattern2 = "ws";
+        String re2 = "(\\n| )+";
+
+        String text1 = " ";    //should be recognized as "a(a|b)*"
+        String text2 = "\n  ";
+
+        NFA nfa1 = NFA.builder(re1, pattern1);
+        NFA nfa2 = NFA.builder(re2, pattern2);
+        NFA nfa = nfa1.merge(nfa2);
+
+        DFA dfa = DFA.builder(nfa);
+        dfa = dfa.minimize();
+        assertEquals(pattern1, dfa.recognize(text1));
+        assertEquals(pattern2, dfa.recognize(text2));
+    }
+
+    @Test
+    public void recognizeLiteral() {
+        String re = "a+(.a+)?";
+        String pattern = "re";
+        NFA nfa = NFA.builder(re, pattern);
+        DFA dfa = DFA.builder(nfa);
+        dfa = dfa.minimize();
+        String text1 = "a.a";
+        String text2 = "!";
+        assertEquals(pattern, dfa.recognize(text1));
+        assertEquals("", dfa.recognize(text2));
+    }
+
 }

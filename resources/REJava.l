@@ -1,6 +1,5 @@
 delim   [\t\r\n ]
 ws      {delim}+
-literal "(digit|letter)*"|'(digit|letter)'
 number  {digits}(.{digits})?(e(\+|-)?{digits})?
 digit   [0-9]
 digits  {digit}+

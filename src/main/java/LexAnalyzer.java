@@ -1,3 +1,5 @@
+import FA.DFA;
+import FA.FA;
 import FA.NFA;
 import exception.GrammarException;
 import exception.RegExpException;
@@ -25,7 +27,7 @@ public class LexAnalyzer {
     private Map<String, String> rawPatternReMap;
     private List<String> patternList;
     Map<String, String> patternReMap;
-    NFA nfa;
+    FA fa;
 
     public LexAnalyzer(String regFilename) throws FileNotFoundException, RegExpException {
         rawPatternReMap = new HashMap<>();
@@ -40,8 +42,8 @@ public class LexAnalyzer {
             rawPatternReMap.put(lineArr[0], lineArr[1]);
             patternList.add(lineArr[0]);
         }
-        parseRegExp();
-        initNFA();
+
+        initFA();
     }
 
     /**
@@ -58,8 +60,15 @@ public class LexAnalyzer {
             rawPatternReMap.put(lineArr[0], lineArr[1]);
             patternList.add(lineArr[0]);
         }
+        initFA();
+    }
+
+    private void initFA() throws RegExpException {
         parseRegExp();
-        initNFA();
+        NFA nfa = initNFA();
+        DFA dfa = DFA.builder(nfa);
+        dfa = dfa.minimize();
+        fa = dfa;
     }
 
     /**
@@ -113,9 +122,9 @@ public class LexAnalyzer {
     /**
      * construct NFA for each regular expression and merge them
      */
-    private void initNFA() throws RegExpException {
+    private NFA initNFA() throws RegExpException {
         String firstPattern = patternList.get(0);
-        nfa = NFA.builder(patternReMap.get(firstPattern), firstPattern);
+        NFA nfa = NFA.builder(patternReMap.get(firstPattern), firstPattern);
 
         for (int i = 1; i < patternList.size(); i++) {
             String pattern = patternList.get(i);
@@ -130,6 +139,8 @@ public class LexAnalyzer {
 
             nfa = nfa.merge(nextNfa);
         }
+
+        return nfa;
     }
 
     private String readFile(String path, Charset encoding) throws IOException {
@@ -150,7 +161,7 @@ public class LexAnalyzer {
             int lastJ = j;
             while (j <= content.length()) {
                 String text = content.substring(i, j);
-                String pattern = nfa.recognize(text);
+                String pattern = fa.recognize(text);
                 if (!pattern.equals("")) {
                     lastMatchesPattern = pattern;
                     lastMatchesLexeme = text;

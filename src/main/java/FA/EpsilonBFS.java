@@ -1,9 +1,8 @@
 package FA;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class EpsilonDFS {
+public class EpsilonBFS {
     private Set<Integer> reachable;
     /**
      * Computes the vertices in digraph {@code G} that are
@@ -12,23 +11,28 @@ public class EpsilonDFS {
      * @param s the source vertex
      * @throws IllegalArgumentException unless {@code 0 <= s < V}
      */
-    public EpsilonDFS(Graph G, int s) {
+    public EpsilonBFS(Graph G, int s) {
         reachable = new HashSet<>();
-        dfs(G, s);
+        bfs(G, Collections.singleton(s));
     }
 
-    public EpsilonDFS(Graph G, Iterable<Integer> sources) {
+    public EpsilonBFS(Graph G, Iterable<Integer> sources) {
         reachable = new HashSet<>();
-        for (int v : sources) {
-            if (!reachable.contains(v)) dfs(G, v);
+        bfs(G, sources);
+    }
+
+    private void bfs(Graph G, Iterable<Integer> sources) {
+        Queue<Integer> queue = new ArrayDeque<>();
+        for (int v: sources) {
+            queue.add(v);
         }
-    }
 
-    private void dfs(Graph G, int v) {
-        reachable.add(v);
-        for (DirectedEdge e : G.adj(v)) {
-            if (!reachable.contains(e.to()) && e.isEpsilon())
-                dfs(G, e.to());
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            reachable.add(v);
+            for (DirectedEdge e: G.outEdges(v)) {
+                if (e.isEpsilon() && !reachable.contains(e.to())) queue.add(e.to());
+            }
         }
     }
 

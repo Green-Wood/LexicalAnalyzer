@@ -126,7 +126,7 @@ public class DFATest {
     }
 
     @Test
-    public void recognizeMultiReInOrder() {
+    public void recognizeMultiReInOrder1() {
         String pattern1 = "re1";
         String re1 = "a(a|b)*";
         String pattern2 = "re2";
@@ -221,13 +221,21 @@ public class DFATest {
     }
 
     @Test
-    public void minimizeUnion() {
-        String re = "a|b|c|d|e";
-        String pattern = "re";
-        NFA nfa = NFA.builder(re, pattern);
+    public void recognizeMultiReInOrder2() {
+        String pattern1 = "delim";
+        String re1 = "[\\t\\n ]";
+        String pattern2 = "ws";
+        String re2 = "([\\t\\n ])+";
+
+        String text1 = " ";    //should be recognized as "a(a|b)*"
+        String text2 = "\n  ";
+
+        NFA nfa1 = NFA.builder(re1, pattern1);
+        NFA nfa2 = NFA.builder(re2, pattern2);
+        NFA nfa = nfa1.merge(nfa2);
+
         DFA dfa = DFA.builder(nfa);
-        dfa = dfa.minimize();
-        assertEquals(5, dfa.E());
-        assertEquals(2, dfa.V());
+        assertEquals(pattern1, dfa.recognize(text1));
+        assertEquals(pattern2, dfa.recognize(text2));
     }
 }

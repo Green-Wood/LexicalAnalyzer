@@ -13,9 +13,13 @@ public class LexAnalyzerTest {
     static {
         regs.add("delim [\\t\\n ]");
         regs.add("ws      {delim}+");
-        regs.add("letter   [A-Za-z]");
+        regs.add("number  {digits}(.{digits})?(e(\\+|-)?{digits})?");
         regs.add("digit    [0-9]");
-        regs.add("id        {letter}({letter}|{digit})*");
+        regs.add("digits  {digit}+");
+        regs.add("id        {letter_}({letter_}|{digit})*");
+        regs.add("letter_   [A-Za-z_]");
+        regs.add("operator       ~|!|-|\\+\\+|--|\\+|-|\\*|/|%|\\?|\\\\|:|==|!=|>|<|>=|<=|=|\\+=|-=|\\*=|/=|%=|&=|^=|\\|=|<<=|>>=|<<|>>|>>>|&|\\||^|&&");
+        regs.add("punctuation     \\(|\\)|\\{|\\}|\\[|\\]|;|\"|'|,|.");
     }
 
     @Test
@@ -29,20 +33,33 @@ public class LexAnalyzerTest {
     }
 
     @Test
-    public void testNFA() throws RegExpException {
+    public void testNFA() throws RegExpException, IOException, GrammarException {
         LexAnalyzer lexAnalyzer = new LexAnalyzer(regs);
         String text1 = "\n";
         String text2 = "a";
-        String text3 = "2";
+        String text3 = "2e-10";
         String text4 = "text4";
-        assertEquals("delim", lexAnalyzer.nfa.recognize(text1));
-        assertEquals("letter", lexAnalyzer.nfa.recognize(text2));
-        assertEquals("digit", lexAnalyzer.nfa.recognize(text3));
-        assertEquals("id", lexAnalyzer.nfa.recognize(text4));
+        assertEquals("delim", lexAnalyzer.fa.recognize(text1));
+        assertEquals("id", lexAnalyzer.fa.recognize(text2));
+        assertEquals("number", lexAnalyzer.fa.recognize(text3));
+        assertEquals("id", lexAnalyzer.fa.recognize(text4));
     }
 
     boolean isEqual(Token token, String pattern, String lexeme, int id) {
         return token.pattern.equals(pattern) && token.lexeme.equals(lexeme) && token.id == id;
+    }
+
+    @Test
+    public void testNFAFile() throws FileNotFoundException, RegExpException {
+        LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
+        String text1 = "\n";
+        String text2 = "a";
+        String text3 = "2e-10";
+        String text4 = "text4";
+        assertEquals("delim", lexAnalyzer.fa.recognize(text1));
+        assertEquals("id", lexAnalyzer.fa.recognize(text2));
+        assertEquals("number", lexAnalyzer.fa.recognize(text3));
+        assertEquals("id", lexAnalyzer.fa.recognize(text4));
     }
 
     @Test
@@ -70,5 +87,6 @@ public class LexAnalyzerTest {
     public void testFile3() throws IOException, GrammarException, RegExpException {
         LexAnalyzer lexAnalyzer = new LexAnalyzer("resources/REJava.l");
         List<Token> tokenList = lexAnalyzer.analyze("resources/input3.txt");
+        assertTrue(true);
     }
 }

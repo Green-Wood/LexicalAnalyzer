@@ -6,7 +6,8 @@ import java.util.Set;
 public class Graph {
     private final int V;                // number of vertices in this digraph
     private int E;                      // number of edges in this digraph
-    private Set<DirectedEdge>[] adj;    // adj[v] = adjacency list for vertex v
+    private Set<DirectedEdge>[] outEdges;    // adj[v] = adjacency list for vertex v
+    private Set<DirectedEdge>[] inEdges;
 
     /**
      * Initializes an empty edge-weighted digraph with {@code V} vertices and 0 edges.
@@ -18,9 +19,12 @@ public class Graph {
         if (V < 0) throw new IllegalArgumentException("Number of vertices in a Digraph must be nonnegative");
         this.V = V;
         this.E = 0;
-        adj = (Set<DirectedEdge>[]) new Set[V];
-        for (int v = 0; v < V; v++)
-            adj[v] = new HashSet<DirectedEdge>();
+        outEdges = (Set<DirectedEdge>[]) new Set[V];
+        inEdges = (Set<DirectedEdge>[]) new Set[V];
+        for (int v = 0; v < V; v++) {
+            outEdges[v] = new HashSet<>();
+            inEdges[v] = new HashSet<>();
+        }
     }
 
     /**
@@ -59,7 +63,8 @@ public class Graph {
         int w = e.to();
         validateVertex(v);
         validateVertex(w);
-        adj[v].add(e);
+        outEdges[v].add(e);
+        inEdges[w].add(e);
         E++;
     }
 
@@ -71,15 +76,20 @@ public class Graph {
      * @return the directed edges incident from vertex {@code v} as an Iterable
      * @throws IllegalArgumentException unless {@code 0 <= v < V}
      */
-    public Iterable<DirectedEdge> adj(int v) {
+    public Iterable<DirectedEdge> outEdges(int v) {
         validateVertex(v);
-        return adj[v];
+        return outEdges[v];
+    }
+
+    public Iterable<DirectedEdge> inEdges(int v) {
+        validateVertex(v);
+        return inEdges[v];
     }
 
     public Iterable<Label> connectedLabel(Iterable<Integer> set) {
         Set<Label> labelSet= new HashSet<>();
         for (int v: set) {
-            for (DirectedEdge e: adj(v)) {
+            for (DirectedEdge e: outEdges(v)) {
                 if (e.label() != null) labelSet.add(e.label());
             }
         }
@@ -98,7 +108,7 @@ public class Graph {
     public Iterable<DirectedEdge> edges() {
         Set<DirectedEdge> list = new HashSet<>();
         for (int v = 0; v < V; v++) {
-            for (DirectedEdge e : adj(v)) {
+            for (DirectedEdge e : outEdges(v)) {
                 list.add(e);
             }
         }
@@ -116,7 +126,7 @@ public class Graph {
         s.append(String.format("Vertex: %d Edges: %d\n", V, E));
         for (int v = 0; v < V; v++) {
             s.append(String.format("V%d: ", v));
-            for (DirectedEdge e : adj[v]) {
+            for (DirectedEdge e : outEdges[v]) {
                 s.append(e).append("  ");
             }
             s.append("\n");

@@ -10,15 +10,20 @@ public class DFA extends FA{
     }
 
     public static DFA builder(NFA nfa) {
+        // map between old graph set to new graph id
         Map<Set<Integer>, Integer> stateIdMap = new HashMap<>();
+        // record edges in new graph
         Map<Integer, Set<DirectedEdge>> adjMap = new HashMap<>();
+
         Queue<Set<Integer>> queue = new ArrayDeque<>();
         // push source
         int id = 0;
         queue.add(Collections.singleton(0));
         while (!queue.isEmpty()) {
-            EpsilonDFS dfs = new EpsilonDFS(nfa.graph, queue.poll());
+            // get  epsilon closure of current set
+            EpsilonBFS dfs = new EpsilonBFS(nfa.graph, queue.poll());
             Set<Integer> epsilonClosure = dfs.closure();
+
             if (!stateIdMap.containsKey(epsilonClosure)) {
                 stateIdMap.put(epsilonClosure, id);
                 id++;
@@ -26,14 +31,14 @@ public class DFA extends FA{
             for (Label label: nfa.labelSet) {
                 Set<Integer> reachable = new HashSet<>();
                 for (int v: epsilonClosure) {
-                    for (DirectedEdge e: nfa.graph.adj(v)) {
+                    for (DirectedEdge e: nfa.graph.outEdges(v)) {
                         if (label.equals(e.label())) reachable.add(e.to());
                     }
                 }
                 // no edge matches
                 if (reachable.isEmpty()) continue;
 
-                EpsilonDFS reachDfs = new EpsilonDFS(nfa.graph, reachable);
+                EpsilonBFS reachDfs = new EpsilonBFS(nfa.graph, reachable);
                 reachable = reachDfs.closure();
 
                 if (!stateIdMap.containsKey(reachable)) {
@@ -41,6 +46,8 @@ public class DFA extends FA{
                     queue.add(reachable);
                     id++;
                 }
+
+                // record edges in new graph
                 int from = stateIdMap.get(epsilonClosure);
                 int to = stateIdMap.get(reachable);
                 DirectedEdge edge = new DirectedEdge(from, to, label);
@@ -60,14 +67,14 @@ public class DFA extends FA{
 
         // set finalSet pattern name
         for (Set<Integer> set: stateIdMap.keySet()) {
-            TreeSet<Integer> finalStates = new TreeSet<>();
+            Queue<Integer> finalStates = new PriorityQueue<>();
             for (int v: set) {
                 if (nfa.finalStateMap.containsKey(v)) {
                     finalStates.add(v);
                 }
             }
             if (finalStates.isEmpty()) continue;
-            int finalState = finalStates.first();
+            int finalState = finalStates.poll();
             dfa.setPatternName(stateIdMap.get(set), nfa.finalStateMap.get(finalState));
         }
 
@@ -80,7 +87,7 @@ public class DFA extends FA{
         char[] charArr = text.toCharArray();
         for (char c: charArr) {
             boolean isMatch = false;
-            for (DirectedEdge e: graph.adj(currentState)) {
+            for (DirectedEdge e: graph.outEdges(currentState)) {
                 // not consider wildcards
                 if (e.label().isMatch(c)) {
                     currentState = e.to();
@@ -97,28 +104,37 @@ public class DFA extends FA{
     public DFA minimize() {
         List<Set<Integer>> P = new ArrayList<>();
         Queue<Set<Integer>> W = new ArrayDeque<>();
-        Set<Integer> finalSet = new HashSet<>();
         Set<Integer> nonFinal = new HashSet<>();
-        for (int v = 0; v < V(); v++) {
-            if (finalStateMap.containsKey(v)) {
-                finalSet.add(v);
-            } else {
-                nonFinal.add(v);
+        Set<String> patternSet = new HashSet<>(finalStateMap.values());
+
+        for (String pattern: patternSet) {
+            Set<Integer> currSet = new HashSet<>();
+            for (int stateId: finalStateMap.keySet()) {
+                if (finalStateMap.get(stateId).equals(pattern))
+                    currSet.add(stateId);
             }
+            P.add(currSet);
+            W.add(currSet);
         }
 
-        P.add(finalSet);
-        P.add(nonFinal);
-        W.add(finalSet);
+        for (int v = 0; v < V(); v++) {
+            if (!finalStateMap.containsKey(v)) nonFinal.add(v);
+        }
 
+        P.add(nonFinal);
+        W.add(nonFinal);
+
+        List<Set<Integer>> newP;
         while (!W.isEmpty()) {
             Set<Integer> A = W.poll();
             for (Label label: labelSet) {
                 Set<Integer> X = new HashSet<>();
-                for (DirectedEdge e: edges()) {
-                    if (label.equals(e.label()) && A.contains(e.to())) X.add(e.from());
+                for (int v: A) {
+                    for (DirectedEdge e: inEdges(v)) {
+                        if (label.equals(e.label())) X.add(e.from());
+                    }
                 }
-                List<Set<Integer>> newP = new ArrayList<>();
+                newP = new ArrayList<>();
                 for (Set<Integer> Y: P) {
                     Set<Integer> intersect = X.stream().filter(Y::contains).collect(Collectors.toSet());
                     Set<Integer> minus = Y.stream().filter(x -> !X.contains(x)).collect(Collectors.toSet());
@@ -156,7 +172,7 @@ public class DFA extends FA{
 
         for (int i = 0; i < sortP.size(); i++) {
             int represent = findRepresent(sortP.get(i));
-            for (DirectedEdge e: adj(represent)) {
+            for (DirectedEdge e: outEdges(represent)) {
                 int to = findSetByVertex(e.to(), sortP);
                 dfa.addEdge(i, to, e.label());
             }

@@ -42,8 +42,12 @@ public abstract class FA {
         return graph.edges();
     }
 
-    Iterable<DirectedEdge> adj(int v) {
-        return graph.adj(v);
+    Iterable<DirectedEdge> outEdges(int v) {
+        return graph.outEdges(v);
+    }
+
+    Iterable<DirectedEdge> inEdges(int v) {
+        return graph.inEdges(v);
     }
 
     String patternName(int stateId) {
