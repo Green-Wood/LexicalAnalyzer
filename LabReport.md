@@ -253,7 +253,7 @@ return finalStateMap.get(currentState);
 
 ### 3.2 匹配用户输入程序时
 
-保持头指针不动，不断移动尾指针来试图对两个指针之间的字符串进行匹配，**如果尾指针移动到末尾仍没有成功匹配**，则记录下头指针所在的整行，抛出MatchingException，提供用户友好的报错信息。
+保持头指针不动，不断移动尾指针来试图对两个指针之间的字符串进行匹配，**如果尾指针移动到末尾仍没有成功匹配**，则记录下头指针所在的整行，抛出MatchingException，提供用户友好的报错信息。（见resources/input2.txt）
 
 ![img](https://tva1.sinaimg.cn/large/006tNbRwly1g9po564uccj31ac0d4di4.jpg)
 
@@ -272,13 +272,79 @@ return finalStateMap.get(currentState);
 
 
 
-### 4.2 最小化DFA
+### 4.2 NFA转化DFA
 
-标准的HopCroft算法将其划分为终止状态和非终止状态两类，但在DFA中可能出现**不同模式的终止状态**，这些不同模式的装置状态应当被初始化为多个不同的集合。
+NFA转化为DFA时，多个不同模式的NFA的终结状态可能对应同一个DFA的终结状态，这是就需要来确定这个DFA的终结状态是属于哪一个模式的。
+
+- 首先，定义REJava.I时，将要匹配的模式的优先级从高到低排列
+
+- 在将多个NFA合并为一个大的NFA时，将REJava.I中排序靠前的模式对应的NFA的终结状态设为编号较小的节点（NFA.java中的merge方法）
+
+```java
+/**
+ * merge two NFA into one NFA with single source and multi finalState
+ * @param another NFA
+ * @return one NFA with single source and multi finalState. Notice that first NFA will have smaller finalState id.
+ */
+public NFA merge(NFA another) {
+    NFA resNfa = new NFA(this.V() + another.V() + 1);
+
+    // add edge from source to first NFA
+    resNfa.addEdge(0, 1, null);
+    // copy first NFA
+    for (DirectedEdge e: this.edges()) {
+        resNfa.addEdge(e.from() + 1, e.to() + 1, e.label());
+    }
+
+    // add edge from source to second NFA
+    resNfa.addEdge(0, this.V() + 1, null);
+    // copy second NFA
+    for (DirectedEdge e: another.edges()) {
+        int from = e.from() + this.V() + 1;
+        int to  = e.to() + this.V() + 1;
+        resNfa.addEdge(from, to, e.label());
+    }
+
+    // copy first finalState and patter name
+    for (Map.Entry<Integer, String> entry: this.finalStateMap.entrySet()) {
+        resNfa.setPatternName(entry.getKey() + 1, entry.getValue());
+    }
+
+    // copy second finalState and patter name
+    for (Map.Entry<Integer, String> entry: another.finalStateMap.entrySet()) {
+        resNfa.setPatternName(entry.getKey() + this.V() + 1, entry.getValue());
+    }
+
+    return resNfa;
+}
+```
+
+- 在设置DFA的终态对应的模式名时，使用一个优先队列，将可能的NFA终态编号加入优先队列。最后选择编号最小，也就是优先级最高的编号。(DFA.java 中的 builder方法)
+
+```java
+// set finalSet pattern name
+for (Set<Integer> set: stateIdMap.keySet()) {
+    Queue<Integer> finalStates = new PriorityQueue<>();
+    for (int v: set) {
+        if (nfa.finalStateMap.containsKey(v)) {
+            finalStates.add(v);
+        }
+    }
+    if (finalStates.isEmpty()) continue;
+    int finalState = finalStates.poll();
+    dfa.setPatternName(stateIdMap.get(set), nfa.finalStateMap.get(finalState));
+}
+```
 
 
 
-### 4.3 模拟DFA运行
+### 4.3 最小化DFA
+
+标准的HopCroft算法将其划分为终止状态和非终止状态两类，但在DFA中可能出现**不同模式的终止状态**，这些不同模式的装置状态应当被初始化为多个不同的集合。（详见DFA.java 中 minimize方法）
+
+
+
+### 4.34 模拟DFA运行
 
 最开始我尝试将通配符加入到支持的集合中。
 
