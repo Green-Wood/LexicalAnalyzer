@@ -12,6 +12,8 @@
 
 ### REJava.l资源文件截图
 
+模式与正则表达式之间使用空白符隔开，在input的时候使用`string.split("\\s+")` 隔开
+
 ![截屏2019-12-0823.06.01](https://tva1.sinaimg.cn/large/006tNbRwly1g9pptmjyxqj31ku0kagpg.jpg)
 
 ### 输入文件/流内容截图
@@ -46,7 +48,7 @@
 比如：
 
 ```java
-number  {digits}(\.{digits})?(e(\+|-)?{digits})?
+number  {digits}(.{digits})?(e(\+|-)?{digits})?
 digit   [0-9]
 digits  {digit}+
 ```

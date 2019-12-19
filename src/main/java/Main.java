@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws IOException, RegExpException, MatchingException {
         LexAnalyzer analyzer = new LexAnalyzer("resources/REJava.l");  // read pattern and regExp
-        List<Token> tokenList = analyzer.analyze("resources/input2.txt");   // read file to analyze
+        List<Token> tokenList = analyzer.analyze("resources/input3.txt");   // read file to analyze
         List<String> tokenStr = tokenList.stream()
                 .filter(token -> !token.pattern.equals("ws") && !token.pattern.equals("delim"))
                 .map(Token::toString)
                 .collect(Collectors.toList());
-        Path file = Paths.get("resources/output1.txt");
+        Path file = Paths.get("resources/output3.txt");
         Files.write(file, tokenStr, StandardCharsets.UTF_8);
     }
 }
